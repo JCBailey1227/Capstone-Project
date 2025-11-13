@@ -1,0 +1,6 @@
+flask
+ollama
+PyPDF2
+
+#Install Ollama desktop app at https://ollama.ai/download to run local Ai (Download the model used in the code "llama3.1:8b")
+#run "pip install -r requirements.txt" in terminal to download dependencies 
