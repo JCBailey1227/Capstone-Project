@@ -1,0 +1,25 @@
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+button {
+  padding: 8px 15px;
+  cursor: pointer;
+}
+
+.summary-box {
+  max-width: 600px;
+  margin-top: 20px;
+  text-align: left;
+}

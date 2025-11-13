@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
+  <title>LLM Paper Summarizer</title>
+</head>
+<body>
+  <h2>Upload a Research Paper (PDF)</h2>
+  <form method="POST" enctype="multipart/form-data" action="/summarize">
+    <input type="file" name="file" accept=".pdf" required>
+    <br><br>
+    <button type="submit">Summarize</button>
+  </form>
+
+  {% if summary %}
+    <h3>Summary:</h3>
+    <p>{{ summary }}</p>
+  {% endif %}
+</body>
+</html>
