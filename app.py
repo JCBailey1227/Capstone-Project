@@ -1,15 +1,24 @@
 from flask import Flask, request, render_template
 import PyPDF2
+import docx
 import ollama
 
 app = Flask(__name__)
 
 def extract_text_from_pdf(file_stream):
-    """Extracts all text from a PDF file stream."""
+    """Extract text from a PDF file stream."""
     reader = PyPDF2.PdfReader(file_stream)
     text = ""
     for page in reader.pages:
         text += page.extract_text() or ""
+    return text.strip()
+
+def extract_text_from_docx(file_stream):
+    """Extract text from a DOCX file stream."""
+    doc = docx.Document(file_stream)
+    text = ""
+    for para in doc.paragraphs:
+        text += para.text + "\n"
     return text.strip()
 
 @app.route("/", methods=["GET"])
@@ -21,14 +30,22 @@ def summarize():
     if "file" not in request.files:
         return "No file uploaded", 400
 
-    pdf_file = request.files["file"]
-    if pdf_file.filename == "":
+    uploaded_file = request.files["file"]
+    if uploaded_file.filename == "":
         return "Empty file", 400
 
-    text = extract_text_from_pdf(pdf_file)
-    if not text:
-        return "No text found in PDF.", 400
+    # Determine file type
+    if uploaded_file.filename.lower().endswith(".pdf"):
+        text = extract_text_from_pdf(uploaded_file)
+    elif uploaded_file.filename.lower().endswith(".docx"):
+        text = extract_text_from_docx(uploaded_file)
+    else:
+        return "Unsupported file type. Please upload PDF or DOCX.", 400
 
+    if not text:
+        return "No text found in the document.", 400
+
+    # Truncate if necessary
     max_chars = 8000
     text = text[:max_chars]
 

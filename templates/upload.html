@@ -6,16 +6,28 @@
   <title>LLM Paper Summarizer</title>
 </head>
 <body>
-  <h2>Upload a Research Paper (PDF)</h2>
-  <form method="POST" enctype="multipart/form-data" action="/summarize">
-    <input type="file" name="file" accept=".pdf" required>
-    <br><br>
-    <button type="submit">Summarize</button>
-  </form>
+  <!-- Header -->
+  <header class="site-header">
+    <h1>LLM Paper Summarizer</h1>
+    <p>Automatically summarize academic papers from PDF or DOCX files</p>
+  </header>
 
-  {% if summary %}
-    <h3>Summary:</h3>
-    <p>{{ summary }}</p>
-  {% endif %}
+  <!-- Main container -->
+  <div class="container">
+    <form method="POST" enctype="multipart/form-data" action="/summarize">
+      <input type="file" name="file" accept=".pdf,.docx" required>
+      <button type="submit">Summarize</button>
+    </form>
+
+    {% if summary %}
+      <h3>Summary:</h3>
+      <div class="summary-box">{{ summary }}</div>
+    {% endif %}
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>© 2025 Group 16: Synapse | Version 1.0 | <a href="https://github.com/JCBailey1227/Capstone-Project" target="_blank">GitHub</a></p>
+  </footer>
 </body>
 </html>

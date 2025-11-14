@@ -1,6 +1,7 @@
 flask
 ollama
 PyPDF2
+python-docx
 
 #Install Ollama desktop app at https://ollama.ai/download to run local Ai (Download the model used in the code "llama3.1:8b")
 #I believe the Ollama app needs to be running when you're using it for the code
