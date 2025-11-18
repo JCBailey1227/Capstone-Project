@@ -1,8 +1,43 @@
-flask
-ollama
-PyPDF2
-python-docx
+# -----------------------------
+# Required Python packages
+# -----------------------------
+flask           # Web framework
+ollama          # Ollama AI integration (requires Ollama desktop app)
+PyPDF2          # PDF text extraction
+python-docx     # DOCX text extraction
 
-#Install Ollama desktop app at https://ollama.ai/download to run local Ai (Download the model used in the code "llama3.1:8b")
-#I believe the Ollama app needs to be running when you're using it for the code
-#run "pip install -r requirements.txt" in terminal to download dependencies 
+# -----------------------------
+# Developer Instructions
+# -----------------------------
+
+# 1. Make sure Python 3.10+ is installed.
+
+# 2. (Optional but recommended) Create and activate a virtual environment:
+#    Linux/macOS:
+#       python -m venv venv
+#       source venv/bin/activate
+#    Windows:
+#       python -m venv venv
+#       venv\Scripts\activate
+
+# 3. Install Python dependencies:
+#     run "pip install -r requirements.txt" in terminal to download dependencies
+
+# 4. Install Ollama desktop app:
+#    Download from: https://ollama.ai/download
+#    Install the model used in the code: "llama3.1:8b" when in Ollama app
+#    Make sure the Ollama app is running while using this program.
+
+# 5. Run the Flask app:
+#    run "python app.py" in the terminal
+#    Then open your browser at: http://127.0.0.1:5000
+
+# -----------------------------
+# Notes
+# -----------------------------
+# - Ensure the Ollama model "llama3.1:8b" is downloaded locally; otherwise,
+#   the summarization will not work.
+# - If you face any issues with PyPDF2 or python-docx, make sure you have
+#   updated versions installed.
+# - This setup is for local development/testing. For deployment, additional
+#   steps may be required.
