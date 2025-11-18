@@ -10,7 +10,9 @@ def extract_text_from_pdf(file_stream):
     reader = PyPDF2.PdfReader(file_stream)
     text = ""
     for page in reader.pages:
-        text += page.extract_text() or ""
+        extracted = page.extract_text()
+        if extracted:
+            text += extracted
     return text.strip()
 
 def extract_text_from_docx(file_stream):
@@ -20,6 +22,14 @@ def extract_text_from_docx(file_stream):
     for para in doc.paragraphs:
         text += para.text + "\n"
     return text.strip()
+
+def extract_text_from_txt(file_stream):
+    """Extract text from a TXT file stream."""
+    raw = file_stream.read()
+    try:
+        return raw.decode("utf-8", errors="ignore").strip()
+    except:
+        return raw.decode("latin-1", errors="ignore").strip()
 
 @app.route("/", methods=["GET"])
 def index():
@@ -31,16 +41,21 @@ def summarize():
         return "No file uploaded", 400
 
     uploaded_file = request.files["file"]
+
     if uploaded_file.filename == "":
         return "Empty file", 400
 
+    filename = uploaded_file.filename.lower()
+
     # Determine file type
-    if uploaded_file.filename.lower().endswith(".pdf"):
+    if filename.endswith(".pdf"):
         text = extract_text_from_pdf(uploaded_file)
-    elif uploaded_file.filename.lower().endswith(".docx"):
+    elif filename.endswith(".docx"):
         text = extract_text_from_docx(uploaded_file)
+    elif filename.endswith(".txt"):
+        text = extract_text_from_txt(uploaded_file)
     else:
-        return "Unsupported file type. Please upload PDF or DOCX.", 400
+        return "Unsupported file type. Please upload PDF, DOCX, or TXT.", 400
 
     if not text:
         return "No text found in the document.", 400
