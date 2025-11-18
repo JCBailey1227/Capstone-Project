@@ -13,8 +13,11 @@ python-docx     # DOCX text extraction
 # 1. Make sure Python 3.10+ is installed.
 
 # 2. (Optional but recommended) Create and activate a virtual environment:
-#    Linux/macOS:
-#       python -m venv venv
+# (A virtual environment is an isolated Python workspace that keeps a project’s 
+# dependencies separate from the system Python, preventing version conflicts and making the project easier to manage and share.)
+#   
+# Linux/macOS:
+#      run "python -m venv venv" 
 #       source venv/bin/activate
 #    Windows:
 #       python -m venv venv
