@@ -27,7 +27,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     for (const file of fileInput.files) {
       const li = document.createElement("li");
-      li.textContent = file.name;
+
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = file.name;
+      nameSpan.style.flex = "1";
 
       const removeBtn = document.createElement("button");
       removeBtn.textContent = "X";
@@ -39,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fileList.innerHTML = "";
       });
 
+      li.appendChild(nameSpan);
       li.appendChild(removeBtn);
       fileList.appendChild(li);
     }

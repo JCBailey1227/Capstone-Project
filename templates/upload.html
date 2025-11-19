@@ -1,42 +1,57 @@
 <!doctype html>
 <html>
+
 <head>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
   <title>LLM Paper Summarizer</title>
 </head>
+
 <body>
-<div id="loading-overlay" class="loading-overlay" style="display: none;">
-  <div class="spinner"></div>
-  <p>Processing your document…</p>
-</div>
 
-<header class="site-header">
-  <h1>LLM Paper Summarizer</h1>
-  <p>Automatically summarize up to 2 academic papers from PDF, DOCX, or TXT files</p>
-</header>
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Processing your document…</p>
+  </div>
 
-<div class="container">
-  <form id="upload-form" method="POST" enctype="multipart/form-data" action="/summarize">
-    <div class="file-input-container">
-      <input type="file" id="file-input" name="files" accept=".pdf,.docx,.txt" multiple required>
-      <ul id="file-list"></ul>
-    </div>
-    <button type="submit">Summarize</button>
-  </form>
+  <header class="site-header">
+    <h1>LLM Paper Summarizer</h1>
+    <p>Automatically summarize up to 2 academic papers from PDF, DOCX, or TXT files</p>
+  </header>
 
-  {% if summaries %}
+  <div class="container">
+    <form id="upload-form" method="POST" enctype="multipart/form-data" action="/summarize">
+      <div class="file-input-container">
+        <input type="file" id="file-input" name="files" accept=".pdf,.docx,.txt" multiple required>
+        <ul id="file-list"></ul>
+      </div>
+      <button type="submit">Summarize</button>
+    </form>
+
+    {% if summaries %}
     <h3>Summaries:</h3>
-    {% for summary in summaries %}
-      <div class="summary-box">{{ summary }}</div>
+
+    {% for item in summaries %}
+    <div class="summary-box">
+      <h4>Summary for: <b>{{ item.filename }}</b></h4>
+      <pre>{{ item.summary }}</pre>
+      {% if item.download_file %}
+      <a href="{{ url_for('download', filename=item.download_file) }}" class="download-btn">Download Summary</a>
+      {% endif %}
+    </div>
     {% endfor %}
-  {% endif %}
-</div>
 
-<footer class="site-footer">
-  <p>© 2025 Group 16: Synapse | Version 1.0 | <a href="https://github.com/JCBailey1227/Capstone-Project" target="_blank">GitHub</a></p>
-</footer>
+    {% endif %}
+  </div>
 
-<script src="{{ url_for('static', filename='main.js') }}"></script>
+  <footer class="site-footer">
+    <p>© 2025 Group 16: Synapse | Version 1.0 |
+      <a href="https://github.com/JCBailey1227/Capstone-Project" target="_blank">GitHub</a>
+    </p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
+
 </html>

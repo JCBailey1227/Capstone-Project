@@ -1,13 +1,28 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_file
+import os
+import time
+from werkzeug.utils import secure_filename
 import PyPDF2
 import docx
 import ollama
+import uuid
+
+# Configuration
+UPLOAD_FOLDER = "uploads"
+SUMMARY_FOLDER = "summaries"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(SUMMARY_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB max upload
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SUMMARY_FOLDER'] = SUMMARY_FOLDER
 
-def extract_text_from_pdf(file_stream):
-    reader = PyPDF2.PdfReader(file_stream)
+# ---------------------------
+# Text Extractor Helpers
+# ---------------------------
+def extract_text_from_pdf(path):
+    reader = PyPDF2.PdfReader(path)
     text = ""
     for page in reader.pages:
         extracted = page.extract_text()
@@ -15,20 +30,24 @@ def extract_text_from_pdf(file_stream):
             text += extracted
     return text.strip()
 
-def extract_text_from_docx(file_stream):
-    doc = docx.Document(file_stream)
+def extract_text_from_docx(path):
+    doc = docx.Document(path)
     text = ""
     for para in doc.paragraphs:
         text += para.text + "\n"
     return text.strip()
 
-def extract_text_from_txt(file_stream):
-    raw = file_stream.read()
+def extract_text_from_txt(path):
+    with open(path, "rb") as f:
+        raw = f.read()
     try:
         return raw.decode("utf-8", errors="ignore").strip()
     except:
         return raw.decode("latin-1", errors="ignore").strip()
 
+# ---------------------------
+# Routes
+# ---------------------------
 @app.route("/", methods=["GET"])
 def index():
     return render_template("upload.html")
@@ -47,35 +66,110 @@ def summarize():
     summaries = []
 
     for uploaded_file in uploaded_files:
-        filename = uploaded_file.filename.lower()
-        if filename.endswith(".pdf"):
-            text = extract_text_from_pdf(uploaded_file)
-        elif filename.endswith(".docx"):
-            text = extract_text_from_docx(uploaded_file)
-        elif filename.endswith(".txt"):
-            text = extract_text_from_txt(uploaded_file)
-        else:
-            summaries.append(f"{uploaded_file.filename}: Unsupported file type")
+        original_filename = uploaded_file.filename
+        if original_filename == "":
+            summaries.append({
+                "filename": "(empty filename)",
+                "summary": "Filename was empty.",
+                "download_file": None
+            })
+            continue
+
+        # Secure + unique filename
+        filename = secure_filename(original_filename)
+        timestamp = int(time.time() * 1000)
+        filename_on_disk = f"{timestamp}_{filename}"
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename_on_disk)
+
+        try:
+            uploaded_file.save(save_path)
+        except Exception as e:
+            summaries.append({
+                "filename": original_filename,
+                "summary": f"Failed to save file: {e}",
+                "download_file": None
+            })
+            continue
+
+        # Determine type
+        lower = original_filename.lower()
+        try:
+            if lower.endswith(".pdf"):
+                text = extract_text_from_pdf(save_path)
+            elif lower.endswith(".docx"):
+                text = extract_text_from_docx(save_path)
+            elif lower.endswith(".txt"):
+                text = extract_text_from_txt(save_path)
+            else:
+                summaries.append({
+                    "filename": original_filename,
+                    "summary": "Unsupported file type",
+                    "download_file": None
+                })
+                continue
+        except Exception as e:
+            summaries.append({
+                "filename": original_filename,
+                "summary": f"Error extracting text: {e}",
+                "download_file": None
+            })
             continue
 
         if not text:
-            summaries.append(f"{uploaded_file.filename}: No text found")
+            summaries.append({
+                "filename": original_filename,
+                "summary": "No text found.",
+                "download_file": None
+            })
             continue
 
-        # Truncate to 8000 characters
-        text = text[:8000]
-        prompt = f"""Summarize this academic paper clearly and concisely. Additionally, 
-        extract metadata (if available) such as: Title, Author(s), Publication date:\n\n{text}"""
+        truncated = text[:8000]
 
-        response = ollama.chat(
-            model="llama3.1:8b",
-            messages=[{"role": "user", "content": prompt}]
-        )
+        prompt = f"""
+Summarize this paper clearly and concisely.
+Additionally, extract metadata (if available) such as Title, Author(s), and Publication Date.
 
-        summary = response["message"]["content"]
-        summaries.append(f"{uploaded_file.filename}:\n{summary}")
+Paper text:
+{truncated}
+"""
+
+        try:
+            response = ollama.chat(
+                model="llama3.1:8b",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            ai_summary = response["message"]["content"]
+        except Exception as e:
+            summaries.append({
+                "filename": original_filename,
+                "summary": f"Ollama error: {e}",
+                "download_file": None
+            })
+            continue
+
+            # Save summary as TXT with clean name
+    safe_original = secure_filename(original_filename)  # removes unsafe chars
+    summary_filename = f"summary_{safe_original}.txt"
+    summary_path = os.path.join(app.config['SUMMARY_FOLDER'], summary_filename)
+    with open(summary_path, "w", encoding="utf-8") as f:
+        f.write(ai_summary)
+
+    summaries.append({
+        "filename": original_filename,
+        "summary": ai_summary,
+        "download_file": summary_filename
+    })
+
 
     return render_template("upload.html", summaries=summaries)
 
+# ---------------------------
+# Download route
+@app.route("/download/<filename>")
+def download(filename):
+    file_path = os.path.join(app.config['SUMMARY_FOLDER'], filename)
+    return send_file(file_path, as_attachment=True)
+
+# ---------------------------
 if __name__ == "__main__":
     app.run(debug=True)
