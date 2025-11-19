@@ -4,14 +4,27 @@ document.addEventListener("DOMContentLoaded", function () {
   const fileInput = document.getElementById("file-input");
   const fileList = document.getElementById("file-list");
 
-  // Show loading overlay when form is submitted
-  form.addEventListener("submit", function () {
+  // Show loading overlay immediately on form submit
+  form.addEventListener("submit", function (e) {
+    if (fileInput.files.length === 0) {
+      e.preventDefault(); // Prevent submit if no files selected
+      alert("Please select at least one file.");
+      return;
+    }
+
     overlay.style.display = "flex";
   });
 
-  // Display selected file with an "X" button
+  // Display selected files with "X" buttons
   fileInput.addEventListener("change", function () {
-    fileList.innerHTML = ""; // clear previous list
+    fileList.innerHTML = "";
+
+    if (fileInput.files.length > 2) {
+      alert("Please select a maximum of 2 files.");
+      fileInput.value = "";
+      return;
+    }
+
     for (const file of fileInput.files) {
       const li = document.createElement("li");
       li.textContent = file.name;
@@ -22,8 +35,8 @@ document.addEventListener("DOMContentLoaded", function () {
       removeBtn.classList.add("remove-file-btn");
 
       removeBtn.addEventListener("click", function () {
-        fileInput.value = ""; // clear the file input
-        fileList.innerHTML = ""; // remove from list display
+        fileInput.value = "";
+        fileList.innerHTML = "";
       });
 
       li.appendChild(removeBtn);

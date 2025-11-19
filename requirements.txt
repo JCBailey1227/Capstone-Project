@@ -34,6 +34,7 @@ python-docx     # DOCX text extraction
 # 5. Run the Flask app:
 #    run "python app.py" in the terminal
 #    Then open your browser at: http://127.0.0.1:5000
+#    "Ctrl+c" in terminal to end code 
 
 # -----------------------------
 # Notes

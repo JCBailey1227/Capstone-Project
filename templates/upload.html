@@ -11,34 +11,32 @@
   <p>Processing your document…</p>
 </div>
 
-<!-- Header -->
 <header class="site-header">
   <h1>LLM Paper Summarizer</h1>
-  <p>Automatically summarize academic papers from PDF, DOCX or TXT files</p>
+  <p>Automatically summarize up to 2 academic papers from PDF, DOCX, or TXT files</p>
 </header>
 
-<!-- Main container -->
 <div class="container">
   <form id="upload-form" method="POST" enctype="multipart/form-data" action="/summarize">
     <div class="file-input-container">
-      <input type="file" id="file-input" name="file" accept=".pdf,.docx,.txt" required>
+      <input type="file" id="file-input" name="files" accept=".pdf,.docx,.txt" multiple required>
       <ul id="file-list"></ul>
     </div>
     <button type="submit">Summarize</button>
   </form>
 
-  {% if summary %}
-    <h3>Summary:</h3>
-    <div class="summary-box">{{ summary }}</div>
+  {% if summaries %}
+    <h3>Summaries:</h3>
+    {% for summary in summaries %}
+      <div class="summary-box">{{ summary }}</div>
+    {% endfor %}
   {% endif %}
 </div>
 
-<!-- Footer -->
 <footer class="site-footer">
   <p>© 2025 Group 16: Synapse | Version 1.0 | <a href="https://github.com/JCBailey1227/Capstone-Project" target="_blank">GitHub</a></p>
 </footer>
 
-<!-- Link external JavaScript -->
 <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>
