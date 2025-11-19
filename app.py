@@ -64,7 +64,8 @@ def summarize():
 
         # Truncate to 8000 characters
         text = text[:8000]
-        prompt = f"Summarize this academic paper clearly and concisely:\n\n{text}"
+        prompt = f"""Summarize this academic paper clearly and concisely. Additionally, 
+        extract metadata (if available) such as: Title, Author(s), Publication date:\n\n{text}"""
 
         response = ollama.chat(
             model="llama3.1:8b",
