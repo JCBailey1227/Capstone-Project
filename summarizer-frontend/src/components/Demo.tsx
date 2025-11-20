@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Sparkles, Copy, Check, Upload, FileText, X, Download } from 'lucide-react';
@@ -24,11 +24,32 @@ export function Demo() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [combinedCopied, setCombinedCopied] = useState(false);
 
+  const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    const fileArray = Array.from(files);
-    setUploadedFiles(fileArray);
+
+    const tooBig: string[] = [];
+    const validFiles: File[] = [];
+
+    Array.from(files).forEach((file) => {
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        tooBig.push(`${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (tooBig.length > 0) {
+      alert(
+        `The following files exceed the 10MB limit and were not added:\n\n${tooBig.join(
+          '\n'
+        )}\n\nPlease upload smaller files.`
+      );
+    }
+
+    setUploadedFiles(validFiles);
     setSummaries([]);
     setCombinedSummary(null);
     setCopiedIndex(null);
@@ -47,7 +68,7 @@ export function Demo() {
     const newFiles = uploadedFiles.filter((_, i) => i !== index);
     setUploadedFiles(newFiles);
 
-    // For simplicity, clear summaries when the file list changes
+    // Clear summaries when the file list changes to avoid mismatch
     setSummaries([]);
     setCombinedSummary(null);
     setCopiedIndex(null);
@@ -65,7 +86,7 @@ export function Demo() {
 
     try {
       const formData = new FormData();
-      uploadedFiles.forEach(file => {
+      uploadedFiles.forEach((file) => {
         formData.append('files', file); // matches backend: request.files.getlist("files")
       });
       formData.append('length', summaryLength);
@@ -186,7 +207,7 @@ export function Demo() {
             <CardHeader>
               <CardTitle>Upload papers</CardTitle>
               <CardDescription>
-                Support for PDF, DOCX, and TXT. Select multiple files to summarize them individually and together.
+                Support for PDF, DOCX, and TXT. Each file must be under 10MB.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -212,7 +233,7 @@ export function Demo() {
                           Click to upload or drag and drop
                         </p>
                         <p className="text-sm text-slate-400">
-                          PDF, DOC, DOCX, or TXT (you can select multiple files)
+                          PDF, DOC, DOCX, or TXT (each file ≤ 10MB)
                         </p>
                       </label>
                     ) : (
@@ -229,7 +250,7 @@ export function Demo() {
                                   {file.name}
                                 </p>
                                 <p className="text-xs text-slate-500">
-                                  {(file.size / 1024).toFixed(1)} KB
+                                  {(file.size / (1024 * 1024)).toFixed(2)} MB
                                 </p>
                               </div>
                             </div>
@@ -399,7 +420,7 @@ export function Demo() {
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Tabs
             value={summaryLength}
-            onValueChange={v => setSummaryLength(v as 'short' | 'medium' | 'long')}
+            onValueChange={(v) => setSummaryLength(v as 'short' | 'medium' | 'long')}
             className="w-auto"
           >
             <TabsList>
